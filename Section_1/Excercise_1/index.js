@@ -1,6 +1,6 @@
 // Global Scope
 // Global Scope
-var globalVariable = "Soy una variable global";
+let globalVariable = "Soy una variable global";
 
 function testScope() {
     // Function Scope
@@ -16,7 +16,7 @@ function testScope() {
 }
 
 // Convertir el código en una cadena
-var codeString = `
+let codeString = `
 var globalVariable = "Soy una variable global";
 
 function testScope() {

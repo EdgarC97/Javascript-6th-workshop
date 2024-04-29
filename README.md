@@ -218,7 +218,6 @@ Promise.resolve("Promesa resuelta").then(console.log);
 
 console.log("Fin del script");
 ```
-
 - Crea un script que muestre al usuario el codigo anterior y le pida predecir el orden en que se mostrarán los mensajes en consola. Con base en la respuesta del usuario, muestra el resultado real (muestra por consola el orden en que se muestran los mensajes) e identifica el error del usuario de la siguiente manera:
 
   - Si el usuario acertó el orden, muestra un mensaje de felicitaciones.
