@@ -1,4 +1,4 @@
-alert("Bienvenido a las reservas del hotel")
+alert("Bienvenido a las reservas del hotel");
 // Ruta del archivo data.json
 const url = "data.json"; // Cambiar por la ruta correcta
 
@@ -28,7 +28,6 @@ function cargarYMostrarData() {
   });
 }
 
-
 // Llamar a la función para cargar y mostrar el contenido de data.json
 cargarYMostrarData()
   .then(({ rooms, roomTypes }) => {
@@ -49,29 +48,45 @@ cargarYMostrarData()
     console.error("Error al manejar la promesa:", error);
   });
 
-  //---------------------------------
+//---------------------------------
 
-  let salir = false;
+let flag = true;
+function crearReserva(numeroHabitacion, fechaInicio, fechaFin, huesped) {
+  function generarGeneradorId() {
+    let id = 1; // Variable id se inicializa fuera de la función interna
 
-while (!salir) {
-  console.log("Bienvenido al Sistema de Reservas de Hotel");
-  console.log("1. Reservar habitación");
-  console.log("2. Verificar disponibilidad");
-  console.log("3. Ver reservas actuales");
-  console.log("4. Cancelar reserva");
-  console.log("5. Editar reserva");
-  console.log("6. Salir");
+    return function () {
+      return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
+    };
+  }
 
-  let opcion = prompt("Por favor, elige una opción:");
+  const generarId = generarGeneradorId(); // Se obtiene la función interna generarId()
 
-  if (opcion === null || opcion.trim() === "") {
-    console.log("Por favor, ingresa una opción válida.");
+  // Pruebas
+  console.log(generarId()); // 1
+  console.log(generarId()); // 2
+  console.log(generarId()); // 3
+  console.log(generarId()); // 4
+  console.log(generarId()); // 5
+}
+while (flag) {
+  let option = prompt(`Por favor ingresa una de las siguientes opciones:
+        1. Reservar habitación
+        2. Verificar disponibilidad
+        3. Ver reservas actuales
+        4. Cancelar reserva
+        5. Editar reserva
+        6. Salir`);
+
+  if (option === null || option.trim() === "") {
+    alert("Por favor, ingresa una opción válida.");
     continue;
   }
 
-  switch (opcion) {
+  switch (option) {
     case "1":
       // Código para reservar habitación
+      let peopleNumber = prompt("Cuantas personas se alojarán?");
       break;
     case "2":
       // Código para verificar disponibilidad
@@ -86,10 +101,10 @@ while (!salir) {
       // Código para editar reserva
       break;
     case "6":
-      salir = true;
+      flag = false;
       break;
     default:
-      console.log("Por favor, elige una opción válida.");
+      alert("Por favor, elige una opción válida.");
   }
 }
 
