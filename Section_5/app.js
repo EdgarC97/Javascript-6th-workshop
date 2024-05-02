@@ -2,6 +2,9 @@ alert("Bienvenido a las reservas del hotel");
 // Ruta del archivo data.json
 const url = "data.json"; // Cambiar por la ruta correcta
 
+let rooms = []; 
+let roomTypes = []; 
+
 // Función para cargar y mostrar el contenido de data.json
 function cargarYMostrarData() {
   // Retorna una nueva promesa que se resuelve después del setTimeout
@@ -27,7 +30,6 @@ function cargarYMostrarData() {
     }, 3000);
   });
 }
-
 // Llamar a la función para cargar y mostrar el contenido de data.json
 cargarYMostrarData()
   .then(({ rooms, roomTypes }) => {
@@ -47,7 +49,6 @@ cargarYMostrarData()
   .catch((error) => {
     console.error("Error al manejar la promesa:", error);
   });
-
 //---------------------------------
 
 let flag = true;
@@ -85,11 +86,36 @@ while (flag) {
 
   switch (option) {
     case "1":
-      // Código para reservar habitación
-      let peopleNumber = prompt("Cuantas personas se alojarán?");
-      break;
+    const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
+
+    // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
+    const habitacionesDisponibles = rooms.filter((room) => {
+      const roomType = roomTypes.find((type) => type.id === room.roomTypeId);
+      return roomType.capacity >= peopleNumber && room.availability;
+    });
+
+    // Mostrar las habitaciones disponibles en la consola
+    habitacionesDisponibles.forEach((habitacion) => {
+      const roomType = roomTypes.find((type) => type.id === habitacion.roomTypeId);
+      console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
+    });
+    const roomNumber = Number(prompt("Ingrese el numero de habitacion a reservar:"));
+
+    const selectedRoom = rooms.find((room) => room.number === roomNumber);
+    if (selectedRoom) {
+      // Llamar a la función para crear la reserva
+      crearReserva(selectedRoom.number, new Date(), new Date(), "Nombre Huesped", peopleNumber)
+        .then((idReserva) => {
+          console.log("Reserva exitosa. ID de reserva:", idReserva);
+        })
+        .catch((error) => {
+          console.error("Error al crear reserva:", error);
+        });
+    } else {
+      console.log("Habitación no encontrada.");
+    }
+    break;
     case "2":
-      // Código para verificar disponibilidad
       break;
     case "3":
       // Código para ver reservas actuales
@@ -109,3 +135,5 @@ while (flag) {
 }
 
 console.log("Gracias por usar nuestro sistema de reservas. ¡Hasta pronto!");
+
+

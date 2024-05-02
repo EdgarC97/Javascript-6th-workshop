@@ -40,7 +40,7 @@ console.log(codeString);
 
 // Explicación al usuario
 alert(
-  "Vamos a realizar un quiz sobre el alcance de las variables en JavaScript. \n Te preguntaré sobre el valor de las variables en diferentes partes del código que ves en consola y tu tarea es seleccionar la opción correcta."
+  "Vamos a realizar un quiz sobre el alcance de las variables en JavaScript. \nTe preguntaré sobre el valor de las variables en diferentes partes del código que ves en consola y tu tarea es seleccionar la opción correcta."
 );
 
 let questionNumber = 1;
@@ -59,7 +59,7 @@ while (questionNumber <= 3) {
         );
         questionNumber++;
       } else if (userAnswer === "1" || userAnswer === "2") {
-        alert(
+        console.error(
           "Incorrecto. Fuera de la función, el valor de globalVariable es: " +
             globalVariable +
             ". Esto es porque globalVariable es una variable global y su valor puede ser accedido desde cualquier parte del código, no importa si es dentro de una función o un bloque."
@@ -79,7 +79,7 @@ while (questionNumber <= 3) {
         );
         questionNumber++;
       } else if (userAnswer === "1" || userAnswer === "3") {
-        alert(
+        console.error(
           "Incorrecto. Dentro del bloque, el valor de blockVariable es: 'Soy una variable de bloque'. Esto es porque blockVariable es una variable de bloque y su valor solo puede ser accedido dentro del bloque donde fue declarada."
         );
         questionNumber++;
@@ -97,7 +97,7 @@ while (questionNumber <= 3) {
         );
         questionNumber++;
       } else if (userAnswer === "2" || userAnswer === "3") {
-        alert(
+        console.error(
           "Incorrecto. Dentro de la función, el valor de functionVariable es: Variable dentro de una funcion Esto es porque functionVariable es una variable local y su valor solo puede ser accedido dentro de la función donde fue declarada."
         );
         questionNumber++;
