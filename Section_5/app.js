@@ -1,71 +1,59 @@
 alert("Bienvenido a las reservas del hotel");
-function bucleMenu() {
+const url = "data.json"; // Cambiar por la ruta correcta
+// Función para cargar y mostrar el contenido de data.json
+function cargarYMostrarData() {
+  // Retorna una nueva promesa que se resuelve después del setTimeout
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // Realiza la solicitud fetch dentro del setTimeout
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Error al cargar los datos.");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Habitaciones:", data.rooms);
+          console.log("Tipos de Habitaciones:", data.roomTypes);
+          resolve(data); // Resuelve la promesa con los datos cargados
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error); // Rechaza la promesa si hay un error
+        });
+    }, 1000);
+  });
+}
+
+cargarYMostrarData()
+  .then((data) => {
+    // Mostrar el contenido de las habitaciones después de cargar los datos
+    bucleMenu(data);
+  })
+  .catch((error) => {
+    console.error("Error al manejar la promesa:", error);
+  });
+
+function bucleMenu(data) {
   // Ruta del archivo data.json
-  const url = "data.json"; // Cambiar por la ruta correcta
+
   let flag = true;
-  // Función para cargar y mostrar el contenido de data.json
-  function cargarYMostrarData() {
-    // Retorna una nueva promesa que se resuelve después del setTimeout
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Realiza la solicitud fetch dentro del setTimeout
-        fetch(url)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Error al cargar los datos.");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Habitaciones:", data.rooms);
-            console.log("Tipos de Habitaciones:", data.roomTypes);
-            resolve(data); // Resuelve la promesa con los datos cargados
-          })
-          .catch((error) => {
-            console.error(error);
-            reject(error); // Rechaza la promesa si hay un error
-          });
-      }, 3000);
-    });
-  }
+
   // Llamar a la función para cargar y mostrar el contenido de data.json
-  cargarYMostrarData()
-    .then(({ rooms, roomTypes }) => {
-      // Mostrar el contenido de las habitaciones después de cargar los datos
-      const userInput = prompt(
-        "Ingrese el numero de habitacion a reservar: " +
-          rooms
-            .map((room) => {
-              return `\nRoom Number: ${room.number} (${
-                roomTypes.find((type) => type.id === room.roomTypeId).name
-              })`;
-            })
-            .join(", ")
-      );
-    })
-    .catch((error) => {
-      console.error("Error al manejar la promesa:", error);
-    });
-  
-    function crearReserva(numeroHabitacion, fechaInicio, fechaFin, huesped) {
-    function generarGeneradorId() {
-      let id = 1; // Variable id se inicializa fuera de la función interna
+function generarGeneradorId() {
+  let id = 0; // Variable id se inicializa fuera de la función interna
 
-      return function () {
-        return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
-      };
-    }
+  return function () {
+    return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
+  };
+}
 
-    const generarId = generarGeneradorId(); // Se obtiene la función interna generarId()
+  function crearReserva(numeroHabitacion, fechaInicio, fechaFin, huesped,numeroPersonas) {
+    const idReserva = generarId();
 
-    // Pruebas
-    console.log(generarId()); // 1
-    console.log(generarId()); // 2
-    console.log(generarId()); // 3
-    console.log(generarId()); // 4
-    console.log(generarId()); // 5
+    
   }
-
 
   while (flag) {
     let option = prompt(`Por favor ingresa una de las siguientes opciones:
@@ -75,7 +63,7 @@ function bucleMenu() {
         4. Cancelar reserva
         5. Editar reserva
         6. Salir`);
-
+    const generarId = generarGeneradorId(); // Se obtiene la función interna generarId()
     if (option === null || option.trim() === "") {
       alert("Por favor, ingresa una opción válida.");
       continue;
@@ -86,42 +74,26 @@ function bucleMenu() {
         // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
         const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
         const habitacionesDisponibles = data.rooms.filter((room) => {
-          const roomType = data.roomTypes.find(
-            (type) => type.id === room.roomTypeId
-          );
+          const roomType = data.roomTypes.find((type) => type.id === room.roomTypeId);
           return roomType.capacity >= peopleNumber && room.availability;
         });
 
         // Mostrar las habitaciones disponibles en la consola
         habitacionesDisponibles.forEach((habitacion) => {
-          const roomType = data.roomTypes.find(
-            (type) => type.id === habitacion.roomTypeId
-          );
+          const roomType = data.roomTypes.find((type) => type.id === habitacion.roomTypeId);
           console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
         });
-        // const roomNumber = Number(
-        //   prompt("Ingrese el numero de habitacion a reservar:")
-        // );
+        const roomNumber = Number(prompt("Ingrese el numero de habitacion a reservar:"));
 
-        // const selectedRoom = rooms.find((room) => room.number === roomNumber);
-        // if (selectedRoom) {
-        //   // Llamar a la función para crear la reserva
-        //   crearReserva(
-        //     selectedRoom.number,
-        //     new Date(),
-        //     new Date(),
-        //     "Nombre Huesped",
-        //     peopleNumber
-        //   )
-        //     .then((idReserva) => {
-        //       console.log("Reserva exitosa. ID de reserva:", idReserva);
-        //     })
-        //     .catch((error) => {
-        //       console.error("Error al crear reserva:", error);
-        //     });
-        // } else {
-        //   console.log("Habitación no encontrada.");
-        // }
+        const selectedRoom = data.rooms.find((room) => room.number === roomNumber);
+        if (selectedRoom) {
+          console.log(selectedRoom);
+          // Llamar a la función para crear la reserva
+          let idReserva = crearReserva(generarId(), selectedRoom.number, new Date(), new Date(), huesped, peopleNumber);
+          console.log("Reserva exitosa. ID de reserva:", idReserva);
+        } else {
+          console.log("Habitación no encontrada.");
+        }
         break;
       case "2":
         break;
@@ -144,5 +116,3 @@ function bucleMenu() {
 
   console.log("Gracias por usar nuestro sistema de reservas. ¡Hasta pronto!");
 }
-
-bucleMenu();
