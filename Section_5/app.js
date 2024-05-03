@@ -1,56 +1,113 @@
 alert("Bienvenido a las reservas del hotel");
-  // Ruta del archivo data.json  
+// Ruta del archivo data.json
 const url = "data.json"; // Cambiar por la ruta correcta
-const reservas = [] ;
-// Función para cargar y mostrar el contenido de data.json
-function cargarYMostrarData() {
-  // Retorna una nueva promesa que se resuelve después del setTimeout
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Realiza la solicitud fetch dentro del setTimeout
-      fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Error al cargar los datos.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Habitaciones:", data.rooms);
-          console.log("Tipos de Habitaciones:", data.roomTypes);
-          resolve(data); // Resuelve la promesa con los datos cargados
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error); // Rechaza la promesa si hay un error
-        });
-    }, 1000);
-  });
-}
-  // Llamar a la función para cargar y mostrar el contenido de data.json
-cargarYMostrarData()
-  .then((data) => {
-    // Mostrar el contenido de las habitaciones después de cargar los datos
-    bucleMenu(data);
-  })
-  .catch((error) => {
-    console.error("Error al manejar la promesa:", error);
-  });
+const reservas = [];
+// Función para validar la fecha
+const validarFecha = (fecha) =>
+  /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$/.test(fecha);
 
-function bucleMenu(data) {
-  let flag = true;
+// Función para solicitar una fecha al usuario
+const solicitarFecha = (mensaje) => {
+  let fecha = prompt(mensaje);
+  while (!validarFecha(fecha))
+    fecha = prompt(`Formato incorrecto. ${mensaje}`);
+  return fecha;
+};
+// Función para cargar y mostrar el contenido de data.json
+const cargarDatos = async () => {
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    } else {
+      throw new Error("Error al cargar los datos");
+    }
+  } catch (error) {
+    console.error("Error al manejar la promesa:", error);
+  }
+};
 
 function generarGeneradorId() {
-  let id = 0; // Variable id se inicializa fuera de la función interna
+  let id = 1; // Variable id se inicializa fuera de la función interna
   return function () {
     return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
   };
 }
-const generarId = generarGeneradorId(); 
+const makeReservation = (data, generarId) => {
+  const huesped = prompt("¿A nombre de quien desea hacer la reserva?");
+  const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
 
+  // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
+  const habitacionesDisponibles = data.rooms.filter((room) => {
+    const roomType = data.roomTypes.find((type) => type.id === room.roomTypeId);
+    return roomType.capacity >= peopleNumber && room.availability;
+  });
+
+  // Mostrar las habitaciones disponibles en la consola
+  habitacionesDisponibles.forEach((habitacion) => {
+    const roomType = data.roomTypes.find(
+      (type) => type.id === habitacion.roomTypeId
+    );
+    console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
+  });
+
+  // Habitación elegida por el usuario
+  const selectedRoom = data.rooms.find(
+    (room) =>
+      room.number ===
+      Number(prompt("Ingrese el numero de habitacion a reservar:"))
+  );
+
+  if (selectedRoom) {
+    const fechaInicio = solicitarFecha(
+      "Ingrese la fecha de inicio de la reserva (dd-mm-aaaa):"
+    );
+    const fechaFin = solicitarFecha(
+      "Ingrese la fecha de fin de la reserva (dd-mm-aaaa):"
+    );
+
+    const idReserva = generarId(); // Aquí generamos un nuevo ID para la reserva
+    // Crear un objeto de reserva con todos los detalles
+    const reserva = {
+      idReserva,
+      numeroHabitacion: selectedRoom,
+      fechaInicio,
+      fechaFin,
+      huesped,
+      numeroPersonas: peopleNumber,
+    };
+    // Confirmar con el usuario antes de agregar la reserva
+    const confirmacion = confirm(
+      "¿Estás seguro de que quieres realizar esta reserva?"
+    );
+
+    // Agregar la reserva al array de reservas
+    if (confirmacion) {
+      reservas.push(reserva);
+      console.log("***RESERVA EXITOSA***");
+      console.log(`ID de reserva: ${idReserva}`);
+      console.log(`Número de habitación: ${selectedRoom.number}`);
+      console.log(`Fecha de inicio: ${fechaInicio}`);
+      console.log(`Fecha de fin: ${fechaFin}`);
+      console.log(`Huésped: ${huesped}`);
+      console.log(`Número de personas: ${peopleNumber}`);
+      console.log("Reserva exitosa. ID de reserva:", idReserva);
+    } else {
+      console.log("Habitación no encontrada.");
+    }
+  }
+};
+
+
+const bucleMenu = async () => {
+  let { rooms, roomTypes } = await cargarDatos();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const generarId = generarGeneradorId();
+  let flag = true;
 
   while (flag) {
-    let option = prompt(`Por favor ingresa una de las siguientes opciones:
+    const option = prompt(`Por favor ingresa una de las siguientes opciones:
         1. Reservar habitación
         2. Verificar disponibilidad
         3. Ver reservas actuales
@@ -63,51 +120,7 @@ const generarId = generarGeneradorId();
     }
     switch (option) {
       case "1":
-        // Función para validar la fecha
-        const validarFecha = fecha => /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$/.test(fecha);
-
-        // Función para solicitar una fecha al usuario
-        const solicitarFecha = mensaje => {
-        let fecha = prompt(mensaje);
-        while (!validarFecha(fecha)) fecha = prompt(`Formato incorrecto. ${mensaje}`);
-        return fecha;
-  }
-        //Funciones para Reversa de habitaciones
-        // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
-        const huesped = prompt("¿A nombre de quien desea hacer la reserva?")
-        const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
-        const habitacionesDisponibles = data.rooms.filter((room) => {
-          const roomType = data.roomTypes.find((type) => type.id === room.roomTypeId);
-          return roomType.capacity >= peopleNumber && room.availability;
-        });
-
-        // Mostrar las habitaciones disponibles en la consola
-        habitacionesDisponibles.forEach((habitacion) => {
-          const roomType = data.roomTypes.find((type) => type.id === habitacion.roomTypeId);
-          console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
-        });
-        const selectedRoom = data.rooms.find(room => room.number === Number(prompt("Ingrese el numero de habitacion a reservar:")));
-
-        if (selectedRoom) {
-          const fechaInicio = solicitarFecha("Ingrese la fecha de inicio de la reserva (dd-mm-aaaa):");
-          const fechaFin = solicitarFecha("Ingrese la fecha de fin de la reserva (dd-mm-aaaa):");
-      
-          const crearReserva = (selectedRoom, fechaInicio, fechaFin, huesped, peopleNumber) => {
-            const idReserva = generarId();  // Aquí generamos un nuevo ID para la reserva
-            console.log("***RESERVA EXITOSA***");
-            console.log(`ID de reserva: ${idReserva}`);
-            console.log(`Número de habitación: ${selectedRoom}`);
-            console.log(`Fecha de inicio: ${fechaInicio}`);
-            console.log(`Fecha de fin: ${fechaFin}`);
-            console.log(`Huésped: ${huesped}`);
-            console.log(`Número de personas: ${peopleNumber}`);
-            return idReserva;
-          }
-          let idReserva = crearReserva(selectedRoom.number, fechaInicio, fechaFin, huesped, peopleNumber);
-          console.log("Reserva exitosa. ID de reserva:", idReserva);
-        } else {
-          console.log("Habitación no encontrada.");
-        }
+        makeReservation({ rooms, roomTypes }, generarId);
         break;
       case "2":
         break;
@@ -129,4 +142,5 @@ const generarId = generarGeneradorId();
   }
 
   console.log("Gracias por usar nuestro sistema de reservas. ¡Hasta pronto!");
-}
+};
+bucleMenu();
