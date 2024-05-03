@@ -1,5 +1,7 @@
 alert("Bienvenido a las reservas del hotel");
+  // Ruta del archivo data.json  
 const url = "data.json"; // Cambiar por la ruta correcta
+const reservas = [] ;
 // Función para cargar y mostrar el contenido de data.json
 function cargarYMostrarData() {
   // Retorna una nueva promesa que se resuelve después del setTimeout
@@ -25,7 +27,7 @@ function cargarYMostrarData() {
     }, 1000);
   });
 }
-
+  // Llamar a la función para cargar y mostrar el contenido de data.json
 cargarYMostrarData()
   .then((data) => {
     // Mostrar el contenido de las habitaciones después de cargar los datos
@@ -36,24 +38,16 @@ cargarYMostrarData()
   });
 
 function bucleMenu(data) {
-  // Ruta del archivo data.json
-
   let flag = true;
 
-  // Llamar a la función para cargar y mostrar el contenido de data.json
 function generarGeneradorId() {
   let id = 0; // Variable id se inicializa fuera de la función interna
-
   return function () {
     return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
   };
 }
+const generarId = generarGeneradorId(); 
 
-  function crearReserva(numeroHabitacion, fechaInicio, fechaFin, huesped,numeroPersonas) {
-    const idReserva = generarId();
-
-    
-  }
 
   while (flag) {
     let option = prompt(`Por favor ingresa una de las siguientes opciones:
@@ -63,15 +57,24 @@ function generarGeneradorId() {
         4. Cancelar reserva
         5. Editar reserva
         6. Salir`);
-    const generarId = generarGeneradorId(); // Se obtiene la función interna generarId()
     if (option === null || option.trim() === "") {
       alert("Por favor, ingresa una opción válida.");
       continue;
     }
     switch (option) {
       case "1":
+        // Función para validar la fecha
+        const validarFecha = fecha => /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$/.test(fecha);
+
+        // Función para solicitar una fecha al usuario
+        const solicitarFecha = mensaje => {
+        let fecha = prompt(mensaje);
+        while (!validarFecha(fecha)) fecha = prompt(`Formato incorrecto. ${mensaje}`);
+        return fecha;
+  }
         //Funciones para Reversa de habitaciones
         // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
+        const huesped = prompt("¿A nombre de quien desea hacer la reserva?")
         const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
         const habitacionesDisponibles = data.rooms.filter((room) => {
           const roomType = data.roomTypes.find((type) => type.id === room.roomTypeId);
@@ -83,13 +86,24 @@ function generarGeneradorId() {
           const roomType = data.roomTypes.find((type) => type.id === habitacion.roomTypeId);
           console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
         });
-        const roomNumber = Number(prompt("Ingrese el numero de habitacion a reservar:"));
+        const selectedRoom = data.rooms.find(room => room.number === Number(prompt("Ingrese el numero de habitacion a reservar:")));
 
-        const selectedRoom = data.rooms.find((room) => room.number === roomNumber);
         if (selectedRoom) {
-          console.log(selectedRoom);
-          // Llamar a la función para crear la reserva
-          let idReserva = crearReserva(generarId(), selectedRoom.number, new Date(), new Date(), huesped, peopleNumber);
+          const fechaInicio = solicitarFecha("Ingrese la fecha de inicio de la reserva (dd-mm-aaaa):");
+          const fechaFin = solicitarFecha("Ingrese la fecha de fin de la reserva (dd-mm-aaaa):");
+      
+          const crearReserva = (selectedRoom, fechaInicio, fechaFin, huesped, peopleNumber) => {
+            const idReserva = generarId();  // Aquí generamos un nuevo ID para la reserva
+            console.log("***RESERVA EXITOSA***");
+            console.log(`ID de reserva: ${idReserva}`);
+            console.log(`Número de habitación: ${selectedRoom}`);
+            console.log(`Fecha de inicio: ${fechaInicio}`);
+            console.log(`Fecha de fin: ${fechaFin}`);
+            console.log(`Huésped: ${huesped}`);
+            console.log(`Número de personas: ${peopleNumber}`);
+            return idReserva;
+          }
+          let idReserva = crearReserva(selectedRoom.number, fechaInicio, fechaFin, huesped, peopleNumber);
           console.log("Reserva exitosa. ID de reserva:", idReserva);
         } else {
           console.log("Habitación no encontrada.");
