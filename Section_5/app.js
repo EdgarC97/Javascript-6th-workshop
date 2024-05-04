@@ -1,7 +1,7 @@
 alert("Bienvenido a las reservas del hotel");
 // Ruta del archivo data.json
 const url = "data.json"; // Cambiar por la ruta correcta
-const reservas = [];
+const bookings = [];
 // Función para validar la fecha
 const validarFecha = (fecha) =>
   /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-(19|20)\d\d$/.test(fecha);
@@ -34,71 +34,150 @@ function generarGeneradorId() {
     return id++; // Cada vez que se llama a la función, se incrementa id y se devuelve
   };
 }
-const makeReservation = (data, generarId) => {
-  const huesped = prompt("¿A nombre de quien desea hacer la reserva?");
-  const peopleNumber = Number(prompt("Cuantas personas se alojarán?"));
 
-  // Filtrar las habitaciones disponibles que satisfagan la capacidad requerida y disponibilidad
-  const habitacionesDisponibles = data.rooms.filter((room) => {
-    const roomType = data.roomTypes.find((type) => type.id === room.roomTypeId);
-    return roomType.capacity >= peopleNumber && room.availability;
-  });
-
-  // Mostrar las habitaciones disponibles en la consola
-  habitacionesDisponibles.forEach((habitacion) => {
-    const roomType = data.roomTypes.find(
-      (type) => type.id === habitacion.roomTypeId
-    );
-    console.log(`Habitación ${habitacion.number}: ${roomType.name}`);
-  });
-
-  // Habitación elegida por el usuario
-  const selectedRoom = data.rooms.find(
-    (room) =>
-      room.number ===
-      Number(prompt("Ingrese el numero de habitacion a reservar:"))
-  );
-
-  if (selectedRoom) {
-    const fechaInicio = solicitarFecha(
-      "Ingrese la fecha de inicio de la reserva (dd-mm-aaaa):"
-    );
-    const fechaFin = solicitarFecha(
-      "Ingrese la fecha de fin de la reserva (dd-mm-aaaa):"
-    );
-
-    const idReserva = generarId(); // Aquí generamos un nuevo ID para la reserva
-    // Crear un objeto de reserva con todos los detalles
-    const reserva = {
-      idReserva,
-      numeroHabitacion: selectedRoom,
-      fechaInicio,
-      fechaFin,
-      huesped,
-      numeroPersonas: peopleNumber,
-    };
-    // Confirmar con el usuario antes de agregar la reserva
-    const confirmacion = confirm(
-      "¿Estás seguro de que quieres realizar esta reserva?"
-    );
-
-    // Agregar la reserva al array de reservas
-    if (confirmacion) {
-      reservas.push(reserva);
-      console.log("***RESERVA EXITOSA***");
-      console.log(`ID de reserva: ${idReserva}`);
-      console.log(`Número de habitación: ${selectedRoom.number}`);
-      console.log(`Fecha de inicio: ${fechaInicio}`);
-      console.log(`Fecha de fin: ${fechaFin}`);
-      console.log(`Huésped: ${huesped}`);
-      console.log(`Número de personas: ${peopleNumber}`);
-      console.log("Reserva exitosa. ID de reserva:", idReserva);
-    } else {
-      console.log("Habitación no encontrada.");
-    }
+const showRooms = (rooms,roomTypes,seeAvaliable = false , seeCapacity = 0) => {
+  let avaliablesRooms = [];
+  if (seeAvaliable && !seeCapacity) {
+    avaliablesRooms = rooms.filter ((room) => {
+      return room.availability === true;}
+    )
+    return [(avaliablesRooms.map((room) => {
+      return `Habitación numero: ${room.number} (${roomTypes.find ((type) => type.id === room.roomTypeId).name})`
+    }).join(",")),avaliablesRooms]
   }
-};
+  else if (seeAvaliable && seeCapacity) {
+    avaliablesRooms = rooms.filter((room) =>{
+      if (roomTypes.find((type) => type.id === room.roomTypeId).capacity >= seeCapacity && room.availability) {
+        return true;
+      };
+    }
+  )
+  return [(avaliablesRooms.map((room) => {
+    return `\nHabitación numero: ${room.number} (${roomTypes.find((type) => 
+      type.id === room.roomTypeId).name})`
+  }).join(", ")
+  ),avaliablesRooms]
+  }
+  else{
+		avaliablesRooms = rooms;
+		return[(rooms.map((room) => {
+			return `\nHabitacion numero: ${room.number} (${roomTypes.find((type) => type.id === room.roomTypeId).name}), estado: ${room.availability ? 'disponible':'ocupada'}`
+			}).join(", ")
+		), avaliablesRooms]
+	}
+}
 
+const makeReservation = (rooms, roomTypes, generarId) => {
+  const peopleNumber = prompt("Ingrese el numero de huespedes");
+  if (!peopleNumber) {
+    console.error("valor ingresado no valido");
+    return;
+  }
+
+  const filteredRooms = showRooms(rooms, roomTypes, true, peopleNumber);
+  if (filteredRooms[1].length === 0) {
+    console.error("No hay habitaciones disponibles que puedan acomodar al número de huéspedes suministrado.");
+    return;
+  }
+
+  const roomNumberToReserve = prompt("Ingrese el numero de la habitación a reservar: " + filteredRooms[0]);
+  if (!roomNumberToReserve) {
+    console.error("valor ingresado no valido");
+    return;
+  }
+
+  const room = filteredRooms[1].find(room => room.number === Number(roomNumberToReserve));
+  if (!room) {
+    console.error("Numero de habitación inválido");
+    return;
+  }
+
+  if (!room.availability) {
+    console.error("Habitacion no disponible");
+    return;
+  }
+
+  alert(" !! Habitacion disponible !!");
+  const fechaInicio = solicitarFecha("Ingrese la fecha de inicio de la reserva (dd-mm-aaaa):");
+  const fechaFin = solicitarFecha("Ingrese la fecha de fin de la reserva (dd-mm-aaaa):");
+  const huesped = prompt("¿A nombre de quien desea hacer la reserva?");
+
+  if (!huesped) {
+    return;
+  }
+
+  const id = generarId();
+  const reserva = {
+    id,
+    huesped,
+    date1: fechaInicio,
+    date2: fechaFin,
+    room: room.number
+  }
+
+  const confirmation = confirm("¿Estás seguro de que quieres realizar esta reserva?");
+  if (!confirmation) {
+    console.warn("Reserva cancelada.");
+    return;
+  }
+
+  room.availability = false;
+  bookings.push(reserva);
+  console.log("***RESERVA EXITOSA***");
+  console.log(`ID de reserva: ${id}`);
+  console.log(`Número de habitación: ${room.number}`);
+  console.log(`Fecha de inicio: ${fechaInicio}`);
+  console.log(`Fecha de fin: ${fechaFin}`);
+  console.log(`Huésped: ${huesped}`);
+  console.log(`Número de personas: ${peopleNumber}`);
+}
+
+const showBookings = (huesped, rooms, roomTypes) => {
+	const bookingsList = [];
+	bookings.filter(e => {
+		if(e.huesped.toLowerCase() === huesped.toLowerCase()){
+			bookingsList.push(e);
+		}
+	});
+
+  if (bookingsList.length > 0) {
+    const bookingDetails = bookingsList.map(book => {
+      const roomType = roomTypes.find((type) => type.id === rooms.find(room => room.number === book.room).roomTypeId).name;
+      return `\nId de reserva: ${book.id}\nFecha de entrada: ${book.date1}\nFecha de salida: ${book.date2}\nHabitación numero: ${book.room} (${roomType})`;
+    });
+  
+    return [`Estimado ${huesped},sus reservas son: ${bookingDetails}`, bookingsList];
+  } else {
+    return ["No se encontraron reservas asociadas", bookingsList];
+  }
+}  
+
+const editBooking = (bookingId) => {
+  // Convertir bookingId a un número
+  const bookingIdNumber = Number(bookingId);
+  // Visualización de Reservas
+  const reserva = bookings.find((reserva) => reserva.id === bookingIdNumber);
+  if (!reserva) {
+    console.error("Reserva no encontrada");
+    return;
+  }
+  console.log(`***Reserva encontrada***\nReserva actual: \nID de reserva: ${reserva.id}\nNúmero de habitación: ${reserva.room}\nHuésped: ${reserva.huesped}\nFecha de inicio: ${reserva.date1}\nFecha de fin: ${reserva.date2}`);
+
+  // Edición de Reserva
+  const fechaInicio = solicitarFecha("Ingrese la nueva fecha de inicio de la reserva (dd-mm-aaaa):");
+  const fechaFin = solicitarFecha("Ingrese la nueva fecha de fin de la reserva (dd-mm-aaaa):");
+
+  // Actualizar la reserva en el array de reservas con los nuevos detalles
+  reserva.date1 = fechaInicio;
+  reserva.date2 = fechaFin;
+
+  console.log("***RESERVA ACTUALIZADA***");
+  console.log(`ID de reserva: ${reserva.id}`);
+  console.log(`Número de habitación: ${reserva.room}`);
+  console.log(`Huésped: ${reserva.huesped}`);
+  console.log(`Fecha de inicio: ${reserva.date1}`);
+  console.log(`Fecha de fin: ${reserva.date2}`);
+};
 
 const bucleMenu = async () => {
   let { rooms, roomTypes } = await cargarDatos();
@@ -108,30 +187,32 @@ const bucleMenu = async () => {
 
   while (flag) {
     const option = prompt(`Por favor ingresa una de las siguientes opciones:
-        1. Reservar habitación
-        2. Verificar disponibilidad
+        1. Verificar disponibilidad de habitaciones
+        2. Reservar habitación
         3. Ver reservas actuales
         4. Cancelar reserva
         5. Editar reserva
         6. Salir`);
     if (option === null || option.trim() === "") {
-      alert("Por favor, ingresa una opción válida.");
+      console.error("Por favor, ingresa una opción válida.");
       continue;
     }
     switch (option) {
       case "1":
-        makeReservation({ rooms, roomTypes }, generarId);
+        alert("Habitaciones y su estado: " + showRooms(rooms, roomTypes)[0]);
         break;
       case "2":
+        makeReservation(rooms, roomTypes, generarId);
         break;
       case "3":
-        // Código para ver reservas actuales
+          alert(showBookings(prompt("Ingrese a nombre de quien esta la reserva:"), rooms, roomTypes) [0]);
         break;
       case "4":
         // Código para cancelar reserva
         break;
       case "5":
-        // Código para editar reserva
+          const bookingId = prompt("Ingrese el ID de la reserva que desea editar:");
+          editBooking(bookingId, rooms, roomTypes);
         break;
       case "6":
         flag = false;
